@@ -1,0 +1,25 @@
+{
+  "id": "core-obs-editor",
+  "require": {
+    "net": false
+  },
+  "endpoints": {
+    "textStories": {
+      "edit": {
+        "doc": "OBS text and audio editor",
+        "label": "pages:core-obs-editor:main",
+        "url": ""
+      }
+    }
+  },
+  "exclude_from_menu": false,
+  "exclude_from_dashboard": false,
+  "i18n": {
+    "title": {
+      "en": "OBS Editor"
+    },
+    "summary": {
+      "en": "Edit Open Bible Stories text and audio"
+    }
+  }
+}

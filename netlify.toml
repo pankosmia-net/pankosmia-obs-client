@@ -1,0 +1,126 @@
+[build]
+  command = "npm run build"
+  publish = "build"
+
+# --- API proxies to Railway backend ---
+
+# Auth flow
+[[redirects]]
+  from = "/auth/*"
+  to = "https://pankosmia-web.up.railway.app/auth/:splat"
+  status = 200
+
+# Current user identity
+[[redirects]]
+  from = "/me"
+  to = "https://pankosmia-web.up.railway.app/me"
+  status = 200
+
+# Network enable
+[[redirects]]
+  from = "/net/enable"
+  to = "https://pankosmia-web.up.railway.app/net/enable"
+  status = 200
+
+# Burrito endpoints (project data, ingredients)
+[[redirects]]
+  from = "/burrito/*"
+  to = "https://pankosmia-web.up.railway.app/burrito/:splat"
+  status = 200
+
+# Git operations (create OBS, list repos, clone)
+[[redirects]]
+  from = "/git/*"
+  to = "https://pankosmia-web.up.railway.app/git/:splat"
+  status = 200
+
+# Gitea remote repos
+[[redirects]]
+  from = "/gitea/*"
+  to = "https://pankosmia-web.up.railway.app/gitea/:splat"
+  status = 200
+
+# Navigation state
+[[redirects]]
+  from = "/navigation/*"
+  to = "https://pankosmia-web.up.railway.app/navigation/:splat"
+  status = 200
+
+# App state (current project)
+[[redirects]]
+  from = "/app-state/*"
+  to = "https://pankosmia-web.up.railway.app/app-state/:splat"
+  status = 200
+
+# i18n
+[[redirects]]
+  from = "/i18n/*"
+  to = "https://pankosmia-web.up.railway.app/i18n/:splat"
+  status = 200
+
+# Settings
+[[redirects]]
+  from = "/settings/*"
+  to = "https://pankosmia-web.up.railway.app/settings/:splat"
+  status = 200
+
+# SSE notifications
+[[redirects]]
+  from = "/notifications"
+  to = "https://pankosmia-web.up.railway.app/notifications"
+  status = 200
+
+# User resources
+[[redirects]]
+  from = "/user-resources/*"
+  to = "https://pankosmia-web.up.railway.app/user-resources/:splat"
+  status = 200
+
+# Content utils
+[[redirects]]
+  from = "/content-utils/*"
+  to = "https://pankosmia-web.up.railway.app/content-utils/:splat"
+  status = 200
+
+# --- Shared static assets from main pankosmia site ---
+
+# Webfonts
+[[redirects]]
+  from = "/webfonts/*"
+  to = "https://pankosmia.netlify.app/webfonts/:splat"
+  status = 200
+
+# App resources (themes, lookups, images)
+[[redirects]]
+  from = "/app-resources/*"
+  to = "https://pankosmia.netlify.app/app-resources/:splat"
+  status = 200
+
+# Templates
+[[redirects]]
+  from = "/templates/*"
+  to = "https://pankosmia.netlify.app/templates/:splat"
+  status = 200
+
+# Client interfaces and list (static APIs from main site)
+[[redirects]]
+  from = "/client-interfaces"
+  to = "https://pankosmia.netlify.app/client-interfaces"
+  status = 200
+
+[[redirects]]
+  from = "/list-clients"
+  to = "https://pankosmia.netlify.app/list-clients"
+  status = 200
+
+# Favicon from main site
+[[redirects]]
+  from = "/clients/main/favicon.ico"
+  to = "https://pankosmia.netlify.app/clients/main/favicon.ico"
+  status = 200
+
+# SPA fallback (must be last)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
