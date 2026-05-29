@@ -85,6 +85,12 @@
   to = "https://pankosmia-web.up.railway.app/content-utils/:splat"
   status = 200
 
+# User languages
+[[redirects]]
+  from = "/user-languages/*"
+  to = "https://pankosmia-web.up.railway.app/user-languages/:splat"
+  status = 200
+
 # --- Shared static assets from main pankosmia site ---
 
 # Webfonts

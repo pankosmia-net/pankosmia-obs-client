@@ -88,6 +88,9 @@ function OBSApp() {
     setSelectedProject(project);
     setObs([1, 0]);
     await postEmptyJson(`/app-state/current-project/${project.path}`);
+    if (project.language_code) {
+      await postEmptyJson(`/user-languages/current-language/${project.language_code}`);
+    }
   };
 
   const handleCreated = () => {

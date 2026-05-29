@@ -18,6 +18,7 @@ const apiPaths = [
   "/settings",
   "/notifications",
   "/user-resources",
+  "/user-languages",
   "/content-utils",
 ];
 
