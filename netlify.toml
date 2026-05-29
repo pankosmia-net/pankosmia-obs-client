@@ -2,13 +2,16 @@
   command = "npm run build"
   publish = "build"
 
+[dev]
+  framework = "#custom"
+  command = "npm run dev"
+  targetPort = 5179
+  port = 8888
+
 # --- API proxies to Railway backend ---
 
-# Auth flow
-[[redirects]]
-  from = "/auth/*"
-  to = "https://pankosmia-web.up.railway.app/auth/:splat"
-  status = 200
+# Auth flow is handled by netlify/edge-functions/auth-proxy.js
+# (sends Origin header so Railway resolves the correct callback URL)
 
 # Current user identity
 [[redirects]]
