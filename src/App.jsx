@@ -89,7 +89,11 @@ function OBSApp() {
     setObs([1, 0]);
     await postEmptyJson(`/app-state/current-project/${project.path}`);
     if (project.language_code) {
-      await postEmptyJson(`/user-languages/current-language/${project.language_code}`);
+      const res = await postEmptyJson(`/user-languages/current-language/${project.language_code}`);
+      if (!res.ok && res.status === 403) {
+        await postEmptyJson(`/user-languages/claim-language/${project.language_code}`);
+        await postEmptyJson(`/user-languages/current-language/${project.language_code}`);
+      }
     }
   };
 
