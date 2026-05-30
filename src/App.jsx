@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import "./index.css";
 import { SpaContainer } from "pankosmia-rcl";
 import { getAndSetJson } from "pithekos-lib";
@@ -7,8 +7,15 @@ import { SnackbarProvider, MaterialDesignContent } from "notistack";
 import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
+import Drawer from "@mui/material/Drawer";
+import Avatar from "@mui/material/Avatar";
+import MenuIcon from "@mui/icons-material/Menu";
+import LoginIcon from "@mui/icons-material/Login";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import { postEmptyJson } from "pithekos-lib";
 import { AuthProvider } from "./context/AuthContext";
+import AuthContext from "./context/AuthContext";
 import OBSContext from "./context/OBSContext";
 import AuthWidget from "./components/AuthWidget";
 import ProjectList from "./components/ProjectList";
@@ -80,14 +87,18 @@ function AppInner() {
 }
 
 function OBSApp() {
+  const { user, loading, isOnline, signIn } = useContext(AuthContext);
   const [selectedProject, setSelectedProject] = useState(null);
   const [obs, setObs] = useState([1, 0]);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const isMobile = useMediaQuery("(max-width:768px)");
 
   const handleSelectProject = async (project) => {
     setSelectedProject(project);
     setObs([1, 0]);
+    setDrawerOpen(false);
     if (!project.isDemo) {
       await postEmptyJson(`/app-state/current-project/${project.path}`);
       if (project.language_code) {
@@ -101,62 +112,134 @@ function OBSApp() {
     setRefreshKey((k) => k + 1);
   };
 
+  const sidebarContent = (
+    <Box
+      sx={{
+        width: 280,
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <Box
+        sx={{
+          p: 1,
+          borderBottom: "1px solid",
+          borderColor: "divider",
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
+        <AuthWidget />
+      </Box>
+      <Box sx={{ flex: 1, overflow: "hidden" }}>
+        <ProjectList
+          key={refreshKey}
+          selectedProject={selectedProject}
+          onSelectProject={handleSelectProject}
+          onCreateNew={() => setCreateDialogOpen(true)}
+        />
+      </Box>
+    </Box>
+  );
+
   return (
     <OBSContext.Provider value={{ obs, setObs }}>
       <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-        {/* Left panel - project list */}
-        <Box
-          sx={{
-            width: 280,
-            minWidth: 280,
-            borderRight: "1px solid",
-            borderColor: "divider",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
+        {/* Desktop: permanent sidebar */}
+        {!isMobile && (
           <Box
             sx={{
-              p: 1,
-              borderBottom: "1px solid",
+              borderRight: "1px solid",
               borderColor: "divider",
-              display: "flex",
-              justifyContent: "center",
             }}
           >
-            <AuthWidget />
+            {sidebarContent}
           </Box>
-          <Box sx={{ flex: 1, overflow: "hidden" }}>
-            <ProjectList
-              key={refreshKey}
-              selectedProject={selectedProject}
-              onSelectProject={handleSelectProject}
-              onCreateNew={() => setCreateDialogOpen(true)}
-            />
-          </Box>
-        </Box>
+        )}
 
-        {/* Main panel - editor */}
-        <Box sx={{ flex: 1, overflow: "auto" }}>
-          {selectedProject?.isDemo ? (
-            <DemoEditor />
-          ) : selectedProject ? (
-            <OBSEditor metadata={selectedProject} />
-          ) : (
+        {/* Mobile: drawer */}
+        {isMobile && (
+          <Drawer
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+          >
+            {sidebarContent}
+          </Drawer>
+        )}
+
+        {/* Main area */}
+        <Box sx={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column" }}>
+          {/* Mobile top bar */}
+          {isMobile && (
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                height: "100%",
-                color: "text.secondary",
+                p: 0.5,
+                borderBottom: "1px solid",
+                borderColor: "divider",
+                gap: 1,
               }}
             >
-              <Typography variant="h6">
-                Select an OBS project to begin editing
+              {!loading && isOnline && !user ? (
+                <IconButton onClick={signIn} color="primary" size="small">
+                  <LoginIcon />
+                </IconButton>
+              ) : user ? (
+                <IconButton onClick={() => setDrawerOpen(true)} size="small">
+                  <Avatar
+                    src={user.avatar_url}
+                    alt={user.name || user.login}
+                    sx={{ width: 28, height: 28 }}
+                  />
+                </IconButton>
+              ) : (
+                <IconButton onClick={() => setDrawerOpen(true)} size="small">
+                  <MenuIcon />
+                </IconButton>
+              )}
+              <Typography variant="body2" color="text.secondary" noWrap sx={{ flex: 1 }}>
+                {selectedProject ? selectedProject.name : "OBS Editor"}
               </Typography>
+              {!user && isOnline && !loading && (
+                <Typography
+                  variant="caption"
+                  sx={{ color: "primary.main", cursor: "pointer", mr: 1 }}
+                  onClick={signIn}
+                >
+                  Sign in
+                </Typography>
+              )}
             </Box>
           )}
+
+          {/* Editor content */}
+          <Box sx={{ flex: 1, overflow: "auto" }}>
+            {selectedProject?.isDemo ? (
+              <DemoEditor />
+            ) : selectedProject ? (
+              <OBSEditor metadata={selectedProject} />
+            ) : (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: "100%",
+                  color: "text.secondary",
+                  p: 2,
+                  textAlign: "center",
+                }}
+              >
+                <Typography variant="h6">
+                  {isMobile
+                    ? "Tap the menu to select a project"
+                    : "Select an OBS project to begin editing"}
+                </Typography>
+              </Box>
+            )}
+          </Box>
         </Box>
       </Box>
 
