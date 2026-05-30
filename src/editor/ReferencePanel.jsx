@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Box, Typography } from "@mui/material";
 import Markdown from "react-markdown";
 import esConfig from "../../config/resources/es-419.json";
+import useTranslationHelps from "./useTranslationHelps";
+import TranslationHelps from "./TranslationHelps";
 import "./OBSMuncher.css";
 
 const GITEA_HOST = "https://git.door43.org";
@@ -25,6 +27,7 @@ export default function ReferencePanel({ obs, referenceConfig }) {
   const [chapter, paragraph] = obs;
   const [refChapters, setRefChapters] = useState({});
   const [error, setError] = useState(null);
+  const helps = useTranslationHelps();
 
   useEffect(() => {
     if (!config) return;
@@ -52,6 +55,10 @@ export default function ReferencePanel({ obs, referenceConfig }) {
   const refText = refParagraphs[paragraph] || "";
   const imageParaIndex = paragraph > 0 ? paragraph : 1;
   const showImage = chapter > 0;
+
+  const notes = helps.getNotesForPara(chapter, paragraph);
+  const questions = helps.getQuestionsForPara(chapter, paragraph);
+  const wordLinks = helps.getWordLinksForPara(chapter, paragraph);
 
   return (
     <Box
@@ -99,6 +106,14 @@ export default function ReferencePanel({ obs, referenceConfig }) {
           {error}
         </Typography>
       ) : null}
+      {!helps.loading && (
+        <TranslationHelps
+          notes={notes}
+          questions={questions}
+          wordLinks={wordLinks}
+          fetchTwArticle={helps.fetchTwArticle}
+        />
+      )}
     </Box>
   );
 }

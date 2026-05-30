@@ -15,7 +15,7 @@ import { getJson } from "pithekos-lib";
 import { debugContext } from "pankosmia-rcl";
 import AuthContext from "../context/AuthContext";
 
-const DEMO_PROJECT = {
+export const DEMO_PROJECT = {
   path: "__demo__/en_obs",
   name: "English OBS (Demo)",
   abbreviation: "en_obs",

@@ -22,6 +22,7 @@ import ProjectList from "./components/ProjectList";
 import CreateOBS from "./components/CreateOBS";
 import OBSEditor from "./editor/OBSEditor";
 import DemoEditor from "./editor/DemoEditor";
+import { DEMO_PROJECT } from "./components/ProjectList";
 
 export default function App() {
   return <AppInner />;
@@ -88,7 +89,7 @@ function AppInner() {
 
 function OBSApp() {
   const { user, loading, isOnline, signIn } = useContext(AuthContext);
-  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(DEMO_PROJECT);
   const [obs, setObs] = useState([1, 0]);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
