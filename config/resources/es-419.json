@@ -1,0 +1,42 @@
+{
+  "language": "es-419",
+  "label": "Español (Latinoamérica)",
+  "resources": [
+    {
+      "org": "es-419_gl",
+      "repo": "es-419_obs",
+      "flavor": "textStories",
+      "label": "Historias Bíblicas Abiertas"
+    },
+    {
+      "org": "es-419_gl",
+      "repo": "es-419_obs-tn",
+      "flavor": "x-notes",
+      "label": "Notas de Traducción"
+    },
+    {
+      "org": "es-419_gl",
+      "repo": "es-419_obs-tq",
+      "flavor": "x-OBSTranslationQuestions",
+      "label": "Preguntas de Traducción"
+    },
+    {
+      "org": "es-419_gl",
+      "repo": "es-419_obs-twl",
+      "flavor": "x-links",
+      "label": "Enlaces de Palabras"
+    },
+    {
+      "org": "es-419_gl",
+      "repo": "es-419_obs-sn",
+      "flavor": "x-notes",
+      "label": "Study Notes (English)"
+    },
+    {
+      "org": "es-419_gl",
+      "repo": "es-419_obs-sq",
+      "flavor": "x-questions",
+      "label": "Study Questions (English)"
+    }
+  ]
+}

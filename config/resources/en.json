@@ -1,0 +1,42 @@
+{
+  "language": "en",
+  "label": "English",
+  "resources": [
+    {
+      "org": "uW",
+      "repo": "en_obs",
+      "flavor": "textStories",
+      "label": "Open Bible Stories"
+    },
+    {
+      "org": "uW",
+      "repo": "obs_images_360",
+      "flavor": "x-obsimages",
+      "label": "OBS Images (360px)"
+    },
+    {
+      "org": "uW",
+      "repo": "en_obs-tn",
+      "flavor": "x-obsnotes",
+      "label": "Translation Notes"
+    },
+    {
+      "org": "uW",
+      "repo": "en_obs-tq",
+      "flavor": "x-obsquestions",
+      "label": "Translation Questions"
+    },
+    {
+      "org": "uW",
+      "repo": "en_obs-sq",
+      "flavor": "x-obsquestions",
+      "label": "Study Questions"
+    },
+    {
+      "org": "uW",
+      "repo": "en_obs-tw",
+      "flavor": "x-obsarticles",
+      "label": "Translation Words"
+    }
+  ]
+}

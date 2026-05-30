@@ -8,6 +8,7 @@ import SaveButton from "./SaveButton";
 import AudioRecorder from "./AudioRecorder";
 import MarkdownField from "./MarkdownField";
 import { Switch, Typography } from "@mui/material";
+import ReferencePanel from "./ReferencePanel";
 
 import "./OBSMuncher.css";
 
@@ -217,23 +218,28 @@ export default function OBSEditor({ metadata }) {
         </Box>
       </Box>
       <OBSNavigator max={currentChapter.length - 1} title={chapterTitle} />
-      <Stack>
-        <MarkdownField
-          currentRow={obs[1]}
-          columnNames={currentChapter}
-          onChangeNote={readOnly ? undefined : handleChange}
-          value={currentChapter[obs[1]] || ""}
-          mode={readOnly ? "preview" : "write"}
-        />
-        {audioEnabled && (
-          <AudioRecorder
-            audioUrl={audioUrl}
-            setAudioUrl={setAudioUrl}
-            metadata={metadata}
-            obs={obs}
+      <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <MarkdownField
+            currentRow={obs[1]}
+            columnNames={currentChapter}
+            onChangeNote={readOnly ? undefined : handleChange}
+            value={currentChapter[obs[1]] || ""}
+            mode={readOnly ? "preview" : "write"}
           />
-        )}
-      </Stack>
+          {audioEnabled && (
+            <AudioRecorder
+              audioUrl={audioUrl}
+              setAudioUrl={setAudioUrl}
+              metadata={metadata}
+              obs={obs}
+            />
+          )}
+        </Box>
+        <Box sx={{ width: 340, minWidth: 280, flexShrink: 0 }}>
+          <ReferencePanel obs={obs} />
+        </Box>
+      </Box>
     </Stack>
   );
 }
