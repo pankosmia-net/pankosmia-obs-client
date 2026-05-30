@@ -7,11 +7,22 @@ import {
   Typography,
   IconButton,
   Tooltip,
+  Divider,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import { getJson } from "pithekos-lib";
 import { debugContext } from "pankosmia-rcl";
 import AuthContext from "../context/AuthContext";
+
+const DEMO_PROJECT = {
+  path: "__demo__/en_obs",
+  name: "English OBS (Demo)",
+  abbreviation: "en_obs",
+  language_code: "en",
+  local_path: "__demo__/en_obs",
+  isDemo: true,
+};
 
 export default function ProjectList({ selectedProject, onSelectProject, onCreateNew }) {
   const { debugRef } = useContext(debugContext);
@@ -62,11 +73,6 @@ export default function ProjectList({ selectedProject, onSelectProject, onCreate
         )}
       </Box>
       <List sx={{ flex: 1, overflow: "auto", p: 0 }}>
-        {projects.length === 0 && (
-          <Box sx={{ p: 2, textAlign: "center", color: "text.secondary" }}>
-            <Typography variant="body2">No OBS projects found</Typography>
-          </Box>
-        )}
         {projects.map((project) => (
           <ListItemButton
             key={project.path}
@@ -86,6 +92,23 @@ export default function ProjectList({ selectedProject, onSelectProject, onCreate
             />
           </ListItemButton>
         ))}
+        {projects.length === 0 && !user && (
+          <Box sx={{ p: 2, textAlign: "center", color: "text.secondary" }}>
+            <Typography variant="body2">Sign in to see your projects</Typography>
+          </Box>
+        )}
+        <Divider />
+        <ListItemButton
+          selected={selectedProject?.path === DEMO_PROJECT.path}
+          onClick={() => onSelectProject(DEMO_PROJECT)}
+          sx={{ borderBottom: "1px solid", borderColor: "divider" }}
+        >
+          <VisibilityIcon sx={{ mr: 1, color: "text.secondary", fontSize: 20 }} />
+          <ListItemText
+            primary={DEMO_PROJECT.name}
+            secondary="Read-only preview"
+          />
+        </ListItemButton>
       </List>
     </Box>
   );

@@ -6,7 +6,8 @@
       "org": "es-419_gl",
       "repo": "es-419_obs",
       "flavor": "textStories",
-      "label": "Historias Bíblicas Abiertas"
+      "label": "Historias Bíblicas Abiertas",
+      "contentPath": "content"
     },
     {
       "org": "es-419_gl",

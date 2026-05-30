@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { Box, Typography } from "@mui/material";
 import Markdown from "react-markdown";
+import esConfig from "../../config/resources/es-419.json";
 import "./OBSMuncher.css";
 
-const SPANISH_OBS_BASE =
-  "https://git.door43.org/es-419_gl/es-419_obs/raw/branch/master/content";
+const GITEA_HOST = "https://git.door43.org";
+
+const defaultRefConfig = esConfig.resources.find((r) => r.flavor === "textStories");
 
 function pad2(n) {
   return n < 10 ? `0${n}` : `${n}`;
@@ -14,34 +16,42 @@ function imageUrl(chapter, paragraph) {
   return `https://cdn.door43.org/obs/jpg/360px/obs-en-${pad2(chapter)}-${pad2(paragraph)}.jpg`;
 }
 
-export default function ReferencePanel({ obs }) {
+function giteaContentUrl(resource) {
+  return `${GITEA_HOST}/${resource.org}/${resource.repo}/raw/branch/master/${resource.contentPath}`;
+}
+
+export default function ReferencePanel({ obs, referenceConfig }) {
+  const config = referenceConfig || defaultRefConfig;
   const [chapter, paragraph] = obs;
-  const [spanishChapters, setSpanishChapters] = useState({});
+  const [refChapters, setRefChapters] = useState({});
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (spanishChapters[chapter]) return;
+    if (!config) return;
+    if (refChapters[chapter]) return;
     const fetchChapter = async () => {
       try {
-        const res = await fetch(`${SPANISH_OBS_BASE}/${pad2(chapter)}.md`);
+        const base = giteaContentUrl(config);
+        const res = await fetch(`${base}/${pad2(chapter)}.md`);
         if (!res.ok) {
-          setError(`Failed to load Spanish chapter ${chapter}`);
+          setError(`Failed to load chapter ${chapter}`);
           return;
         }
         const text = await res.text();
         const parts = text.split(/\n\r?\n\r?/);
         const paragraphs = parts.filter((_, i) => i % 2 === 0);
-        setSpanishChapters((prev) => ({ ...prev, [chapter]: paragraphs }));
+        setRefChapters((prev) => ({ ...prev, [chapter]: paragraphs }));
       } catch {
         setError("Could not reach reference content");
       }
     };
     fetchChapter();
-  }, [chapter]);
+  }, [chapter, config]);
 
-  const spanishParagraphs = spanishChapters[chapter] || [];
-  const spanishText = spanishParagraphs[paragraph] || "";
-  const showImage = paragraph > 0;
+  const refParagraphs = refChapters[chapter] || [];
+  const refText = refParagraphs[paragraph] || "";
+  const imageParaIndex = paragraph > 0 ? paragraph : 1;
+  const showImage = chapter > 0;
 
   return (
     <Box
@@ -54,17 +64,11 @@ export default function ReferencePanel({ obs }) {
       }}
     >
       {showImage && (
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            mb: 1.5,
-          }}
-        >
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 1.5 }}>
           <Box
             component="img"
-            src={imageUrl(chapter, paragraph)}
-            alt={`OBS ${chapter}:${paragraph}`}
+            src={imageUrl(chapter, imageParaIndex)}
+            alt={`OBS ${chapter}:${imageParaIndex}`}
             sx={{
               maxWidth: "100%",
               maxHeight: 200,
@@ -77,17 +81,17 @@ export default function ReferencePanel({ obs }) {
           />
         </Box>
       )}
-      {spanishText ? (
+      {refText ? (
         <Box>
           <Typography
             variant="caption"
             color="text.secondary"
             sx={{ mb: 0.5, display: "block" }}
           >
-            Español (es-419)
+            {config.label}
           </Typography>
           <Box sx={{ fontSize: "0.9rem", color: "text.secondary" }}>
-            <Markdown className="markdown-content">{spanishText}</Markdown>
+            <Markdown className="markdown-content">{refText}</Markdown>
           </Box>
         </Box>
       ) : error ? (

@@ -10,28 +10,31 @@ import {
   TextField,
 } from "@mui/material";
 
-export default function MarkdownField({ columnNames, onChangeNote, value, mode }) {
-  const [displayMode, setDisplayMode] = useState("write");
+export default function MarkdownField({ onChangeNote, value, mode }) {
+  const readOnly = mode === "preview" && !onChangeNote;
+  const [displayMode, setDisplayMode] = useState(readOnly ? "preview" : "write");
 
   return (
     <Box>
-      <ToggleButtonGroup
-        exclusive
-        size="small"
-        value={displayMode}
-        onChange={(event, newDisplayMode) => {
-          if (newDisplayMode !== null) {
-            setDisplayMode(newDisplayMode);
-          }
-        }}
-      >
-        <ToggleButton value="write">
-          <CreateIcon />
-        </ToggleButton>
-        <ToggleButton value="preview">
-          <RemoveRedEyeIcon />
-        </ToggleButton>
-      </ToggleButtonGroup>
+      {!readOnly && (
+        <ToggleButtonGroup
+          exclusive
+          size="small"
+          value={displayMode}
+          onChange={(event, newDisplayMode) => {
+            if (newDisplayMode !== null) {
+              setDisplayMode(newDisplayMode);
+            }
+          }}
+        >
+          <ToggleButton value="write">
+            <CreateIcon />
+          </ToggleButton>
+          <ToggleButton value="preview">
+            <RemoveRedEyeIcon />
+          </ToggleButton>
+        </ToggleButtonGroup>
+      )}
 
       {displayMode === "write" ? (
         <FormControl fullWidth margin="normal">
@@ -47,7 +50,7 @@ export default function MarkdownField({ columnNames, onChangeNote, value, mode }
           />
         </FormControl>
       ) : (
-        <Box sx={{ border: "1px solid", marginTop: 2 }}>
+        <Box sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1, mt: 2, p: 2 }}>
           <Markdown>{value}</Markdown>
         </Box>
       )}

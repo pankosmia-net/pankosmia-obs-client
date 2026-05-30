@@ -218,28 +218,24 @@ export default function OBSEditor({ metadata }) {
         </Box>
       </Box>
       <OBSNavigator max={currentChapter.length - 1} title={chapterTitle} />
-      <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <MarkdownField
-            currentRow={obs[1]}
-            columnNames={currentChapter}
-            onChangeNote={readOnly ? undefined : handleChange}
-            value={currentChapter[obs[1]] || ""}
-            mode={readOnly ? "preview" : "write"}
+      <Stack spacing={2} sx={{ mt: 1 }}>
+        <ReferencePanel obs={obs} />
+        <MarkdownField
+          currentRow={obs[1]}
+          columnNames={currentChapter}
+          onChangeNote={readOnly ? undefined : handleChange}
+          value={currentChapter[obs[1]] || ""}
+          mode={readOnly ? "preview" : "write"}
+        />
+        {audioEnabled && (
+          <AudioRecorder
+            audioUrl={audioUrl}
+            setAudioUrl={setAudioUrl}
+            metadata={metadata}
+            obs={obs}
           />
-          {audioEnabled && (
-            <AudioRecorder
-              audioUrl={audioUrl}
-              setAudioUrl={setAudioUrl}
-              metadata={metadata}
-              obs={obs}
-            />
-          )}
-        </Box>
-        <Box sx={{ width: 340, minWidth: 280, flexShrink: 0 }}>
-          <ReferencePanel obs={obs} />
-        </Box>
-      </Box>
+        )}
+      </Stack>
     </Stack>
   );
 }

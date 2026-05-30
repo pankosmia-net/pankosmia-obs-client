@@ -14,6 +14,7 @@ import AuthWidget from "./components/AuthWidget";
 import ProjectList from "./components/ProjectList";
 import CreateOBS from "./components/CreateOBS";
 import OBSEditor from "./editor/OBSEditor";
+import DemoEditor from "./editor/DemoEditor";
 
 export default function App() {
   return <AppInner />;
@@ -87,9 +88,11 @@ function OBSApp() {
   const handleSelectProject = async (project) => {
     setSelectedProject(project);
     setObs([1, 0]);
-    await postEmptyJson(`/app-state/current-project/${project.path}`);
-    if (project.language_code) {
-      await postEmptyJson(`/user-languages/current-language/${project.language_code}`);
+    if (!project.isDemo) {
+      await postEmptyJson(`/app-state/current-project/${project.path}`);
+      if (project.language_code) {
+        await postEmptyJson(`/user-languages/current-language/${project.language_code}`);
+      }
     }
   };
 
@@ -135,7 +138,9 @@ function OBSApp() {
 
         {/* Main panel - editor */}
         <Box sx={{ flex: 1, overflow: "auto" }}>
-          {selectedProject ? (
+          {selectedProject?.isDemo ? (
+            <DemoEditor />
+          ) : selectedProject ? (
             <OBSEditor metadata={selectedProject} />
           ) : (
             <Box

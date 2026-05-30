@@ -6,7 +6,8 @@
       "org": "uW",
       "repo": "en_obs",
       "flavor": "textStories",
-      "label": "Open Bible Stories"
+      "label": "Open Bible Stories",
+      "contentPath": "ingredients/content"
     },
     {
       "org": "uW",
