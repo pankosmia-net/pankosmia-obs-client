@@ -1,7 +1,14 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useCallback } from "react";
 import "./index.css";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useParams,
+  useNavigate,
+} from "react-router-dom";
 import { SpaContainer } from "pankosmia-rcl";
-import { getAndSetJson } from "pithekos-lib";
+import { getAndSetJson, postEmptyJson } from "pithekos-lib";
 import { createTheme, ThemeProvider } from "@mui/material";
 import { SnackbarProvider, MaterialDesignContent } from "notistack";
 import { styled } from "@mui/material/styles";
@@ -13,19 +20,21 @@ import Avatar from "@mui/material/Avatar";
 import MenuIcon from "@mui/icons-material/Menu";
 import LoginIcon from "@mui/icons-material/Login";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { postEmptyJson } from "pithekos-lib";
 import { AuthProvider } from "./context/AuthContext";
 import AuthContext from "./context/AuthContext";
 import OBSContext from "./context/OBSContext";
 import AuthWidget from "./components/AuthWidget";
-import ProjectList from "./components/ProjectList";
+import ProjectList, { DEMO_PROJECT } from "./components/ProjectList";
 import CreateOBS from "./components/CreateOBS";
 import OBSEditor from "./editor/OBSEditor";
 import DemoEditor from "./editor/DemoEditor";
-import { DEMO_PROJECT } from "./components/ProjectList";
 
 export default function App() {
-  return <AppInner />;
+  return (
+    <BrowserRouter>
+      <AppInner />
+    </BrowserRouter>
+  );
 }
 
 function AppInner() {
@@ -79,7 +88,13 @@ function AppInner() {
       >
         <SpaContainer>
           <AuthProvider>
-            <OBSApp />
+            <Routes>
+              <Route path="/:lang/OBS/:story/:section" element={<OBSApp />} />
+              <Route path="/:lang/OBS/:story" element={<OBSApp />} />
+              <Route path="/:lang/OBS" element={<OBSApp />} />
+              <Route path="/:lang" element={<OBSApp />} />
+              <Route path="/" element={<OBSApp />} />
+            </Routes>
           </AuthProvider>
         </SpaContainer>
       </SnackbarProvider>
@@ -87,24 +102,85 @@ function AppInner() {
   );
 }
 
+function pad2(n) {
+  return String(n).padStart(2, "0");
+}
+
 function OBSApp() {
+  const { lang, story, section } = useParams();
+  const navigate = useNavigate();
   const { user, loading, isOnline, signIn } = useContext(AuthContext);
-  const [selectedProject, setSelectedProject] = useState(DEMO_PROJECT);
-  const [obs, setObs] = useState([1, 0]);
+
+  const storyNum = story ? parseInt(story, 10) : 1;
+  const sectionNum = section ? parseInt(section, 10) : 0;
+  const obs = [storyNum, sectionNum];
+
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [projects, setProjects] = useState([]);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width:768px)");
 
-  const handleSelectProject = async (project) => {
-    setSelectedProject(project);
-    setObs([1, 0]);
-    setDrawerOpen(false);
-    if (!project.isDemo) {
-      await postEmptyJson(`/app-state/current-project/${project.path}`);
-      if (project.language_code) {
-        await postEmptyJson(`/user-languages/current-language/${project.language_code}`);
+  const currentLang = lang || "en";
+  const isDemo = !lang || currentLang === "en";
+
+  const setObs = useCallback(
+    ([newStory, newSection]) => {
+      const l = lang || "en";
+      navigate(`/${l}/OBS/${pad2(newStory)}/${pad2(newSection)}`, { replace: true });
+    },
+    [navigate, lang],
+  );
+
+  useEffect(() => {
+    const loadProjects = async () => {
+      const { getJson } = await import("pithekos-lib");
+      const response = await getJson("/burrito/metadata/summaries");
+      if (response.ok) {
+        const filtered = Object.entries(response.json)
+          .filter(([, meta]) => meta.flavor === "textStories")
+          .map(([path, meta]) => ({
+            path,
+            name: meta.name?.trim() || meta.abbreviation,
+            abbreviation: meta.abbreviation,
+            language_code: meta.language_code,
+            local_path: path,
+          }));
+        setProjects(filtered);
       }
+    };
+    loadProjects();
+  }, [refreshKey]);
+
+  useEffect(() => {
+    if (isDemo) {
+      setSelectedProject(DEMO_PROJECT);
+      return;
+    }
+    const match = projects.find((p) => p.language_code === currentLang);
+    if (match) {
+      setSelectedProject(match);
+    } else {
+      setSelectedProject({ ...DEMO_PROJECT, language_code: currentLang, isDemo: true });
+    }
+  }, [currentLang, projects, isDemo]);
+
+  useEffect(() => {
+    if (selectedProject && !selectedProject.isDemo) {
+      postEmptyJson(`/app-state/current-project/${selectedProject.path}`);
+      if (selectedProject.language_code) {
+        postEmptyJson(`/user-languages/current-language/${selectedProject.language_code}`);
+      }
+    }
+  }, [selectedProject?.path]);
+
+  const handleSelectProject = (project) => {
+    setDrawerOpen(false);
+    if (project.isDemo) {
+      navigate("/");
+    } else {
+      navigate(`/${project.language_code}/OBS/${pad2(storyNum)}/${pad2(sectionNum)}`);
     }
   };
 
@@ -147,31 +223,19 @@ function OBSApp() {
   return (
     <OBSContext.Provider value={{ obs, setObs }}>
       <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-        {/* Desktop: permanent sidebar */}
         {!isMobile && (
-          <Box
-            sx={{
-              borderRight: "1px solid",
-              borderColor: "divider",
-            }}
-          >
+          <Box sx={{ borderRight: "1px solid", borderColor: "divider" }}>
             {sidebarContent}
           </Box>
         )}
 
-        {/* Mobile: drawer */}
         {isMobile && (
-          <Drawer
-            open={drawerOpen}
-            onClose={() => setDrawerOpen(false)}
-          >
+          <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
             {sidebarContent}
           </Drawer>
         )}
 
-        {/* Main area */}
         <Box sx={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column" }}>
-          {/* Mobile top bar */}
           {isMobile && (
             <Box
               sx={{
@@ -215,7 +279,6 @@ function OBSApp() {
             </Box>
           )}
 
-          {/* Editor content */}
           <Box sx={{ flex: 1, overflow: "auto" }}>
             {selectedProject?.isDemo ? (
               <DemoEditor />
