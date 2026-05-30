@@ -9,6 +9,8 @@ import AudioRecorder from "./AudioRecorder";
 import MarkdownField from "./MarkdownField";
 import { Switch, Typography } from "@mui/material";
 import ReferencePanel from "./ReferencePanel";
+import TranslationHelps from "./TranslationHelps";
+import useTranslationHelps from "./useTranslationHelps";
 
 import "./OBSMuncher.css";
 
@@ -20,6 +22,7 @@ export default function OBSEditor({ metadata }) {
   const { obs, setObs } = useContext(OBSContext);
   const { debugRef } = useContext(DebugContext);
   const { user } = useContext(AuthContext);
+  const helps = useTranslationHelps();
   const [ingredient, setIngredient] = useState([]);
   const [audioUrl, setAudioUrl] = useState("");
   const [checksums, setChecksums] = useState({});
@@ -227,6 +230,14 @@ export default function OBSEditor({ metadata }) {
           value={currentChapter[obs[1]] || ""}
           mode={readOnly ? "preview" : "write"}
         />
+        {!helps.loading && (
+          <TranslationHelps
+            notes={helps.getNotesForPara(obs[0], obs[1])}
+            questions={helps.getQuestionsForPara(obs[0], obs[1])}
+            wordLinks={helps.getWordLinksForPara(obs[0], obs[1])}
+            fetchTwArticle={helps.fetchTwArticle}
+          />
+        )}
         {audioEnabled && (
           <AudioRecorder
             audioUrl={audioUrl}

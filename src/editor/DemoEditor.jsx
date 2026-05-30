@@ -6,6 +6,8 @@ import OBSContext from "../context/OBSContext";
 import OBSNavigator from "./OBSNavigator";
 import MarkdownField from "./MarkdownField";
 import ReferencePanel from "./ReferencePanel";
+import TranslationHelps from "./TranslationHelps";
+import useTranslationHelps from "./useTranslationHelps";
 import enConfig from "../../config/resources/en.json";
 import esConfig from "../../config/resources/es-419.json";
 
@@ -27,6 +29,7 @@ function pad2(n) {
 export default function DemoEditor() {
   const { obs } = useContext(OBSContext);
   const [chapters, setChapters] = useState({});
+  const helps = useTranslationHelps();
 
   useEffect(() => {
     if (chapters[obs[0]]) return;
@@ -48,6 +51,7 @@ export default function DemoEditor() {
 
   const currentChapter = chapters[obs[0]] || [];
   const chapterTitle = (currentChapter[0] || "").replace(/^#+\s*/, "").trim();
+  const [chapter, paragraph] = obs;
 
   return (
     <Stack sx={{ p: 2 }}>
@@ -79,6 +83,14 @@ export default function DemoEditor() {
             mode="write"
           />
         </Box>
+        {!helps.loading && (
+          <TranslationHelps
+            notes={helps.getNotesForPara(chapter, paragraph)}
+            questions={helps.getQuestionsForPara(chapter, paragraph)}
+            wordLinks={helps.getWordLinksForPara(chapter, paragraph)}
+            fetchTwArticle={helps.fetchTwArticle}
+          />
+        )}
       </Stack>
     </Stack>
   );
