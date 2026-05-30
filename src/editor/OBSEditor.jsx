@@ -104,10 +104,17 @@ export default function OBSEditor({ metadata }) {
     });
   };
 
+  const isChapterModified = (chapterIndex) => {
+    const originalChecksum = chapterChecksums[chapterIndex];
+    if (!originalChecksum) return false;
+    return originalChecksum !== calculateChapterChecksum(ingredient[chapterIndex]);
+  };
+
   const handleSaveOBS = async () => {
     if (!ingredient || ingredient.length === 0) return;
     for (let i = 0; i < ingredient.length; i++) {
       if (!ingredient[i] || ingredient[i].length === 0) continue;
+      if (!isChapterModified(i)) continue;
       await uploadOBSIngredient(ingredient[i], i);
     }
   };
