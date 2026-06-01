@@ -17,7 +17,7 @@ import AuthContext from "../context/AuthContext";
 
 export const DEMO_PROJECT = {
   path: "__demo__/en_obs",
-  name: "English OBS (Demo)",
+  name: "OBS (Demo)",
   abbreviation: "en_obs",
   language_code: "en",
   local_path: "__demo__/en_obs",

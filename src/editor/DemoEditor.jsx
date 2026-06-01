@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 import { Typography } from "@mui/material";
 import OBSContext from "../context/OBSContext";
 import OBSNavigator from "./OBSNavigator";
-import MarkdownField from "./MarkdownField";
+import InlineEditor from "./InlineEditor";
 import ReferencePanel from "./ReferencePanel";
 import TranslationHelps from "./TranslationHelps";
 import useTranslationHelps from "./useTranslationHelps";
@@ -53,6 +53,10 @@ export default function DemoEditor() {
   const chapterTitle = (currentChapter[0] || "").replace(/^#+\s*/, "").trim();
   const [chapter, paragraph] = obs;
 
+  const wordLinks = helps.getWordLinksForPara(chapter, paragraph);
+  const notes = helps.getNotesForPara(chapter, paragraph);
+  const questions = helps.getQuestionsForPara(chapter, paragraph);
+
   return (
     <Stack sx={{ p: 2 }}>
       <Box
@@ -70,26 +74,20 @@ export default function DemoEditor() {
       </Box>
       <OBSNavigator max={currentChapter.length - 1} title={chapterTitle} />
       <Stack spacing={2} sx={{ mt: 1 }}>
-        <ReferencePanel obs={obs} referenceConfig={esObs} />
-        <Box>
-          <Typography variant="caption" color="text.secondary">
-            Try editing below — changes are not saved in demo mode
-          </Typography>
-          <MarkdownField
-            currentRow={obs[1]}
-            columnNames={currentChapter}
-            onChangeNote={() => {}}
-            value={currentChapter[obs[1]] || ""}
-            mode="write"
-          />
-        </Box>
+        <ReferencePanel
+          obs={obs}
+          referenceConfig={esObs}
+          wordLinks={wordLinks}
+          fetchTwTitle={helps.fetchTwTitle}
+          fetchTwArticle={helps.fetchTwArticle}
+        />
+        <InlineEditor
+          value={currentChapter[obs[1]] || ""}
+          onChange={() => {}}
+          placeholder="Try editing — changes are not saved in demo mode"
+        />
         {!helps.loading && (
-          <TranslationHelps
-            notes={helps.getNotesForPara(chapter, paragraph)}
-            questions={helps.getQuestionsForPara(chapter, paragraph)}
-            wordLinks={helps.getWordLinksForPara(chapter, paragraph)}
-            fetchTwArticle={helps.fetchTwArticle}
-          />
+          <TranslationHelps notes={notes} questions={questions} />
         )}
       </Stack>
     </Stack>

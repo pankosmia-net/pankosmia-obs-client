@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 const GITEA_HOST = "https://git.door43.org";
 
@@ -48,8 +48,9 @@ export default function useTranslationHelps() {
   const [tn, setTn] = useState(null);
   const [tq, setTq] = useState(null);
   const [twl, setTwl] = useState(null);
-  const [twCache, setTwCache] = useState({});
   const [loading, setLoading] = useState(true);
+  const twCacheRef = useRef({});
+  const twTitleCacheRef = useRef({});
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -70,38 +71,69 @@ export default function useTranslationHelps() {
     fetchAll();
   }, []);
 
-  const getNotesForPara = (chapter, paragraph) => {
-    if (!tn) return [];
-    return tn[refKey(chapter, paragraph)] || [];
-  };
+  const getNotesForPara = useCallback(
+    (chapter, paragraph) => {
+      if (!tn) return [];
+      return tn[refKey(chapter, paragraph)] || [];
+    },
+    [tn],
+  );
 
-  const getQuestionsForPara = (chapter, paragraph) => {
-    if (!tq) return [];
-    return tq[refKey(chapter, paragraph)] || [];
-  };
+  const getQuestionsForPara = useCallback(
+    (chapter, paragraph) => {
+      if (!tq) return [];
+      return tq[refKey(chapter, paragraph)] || [];
+    },
+    [tq],
+  );
 
-  const getWordLinksForPara = (chapter, paragraph) => {
-    if (!twl) return [];
-    const rows = twl[refKey(chapter, paragraph)] || [];
-    return rows.map((r) => ({
-      word: r.OrigWords,
-      tag: r.Tags,
-      twPath: twLinkToPath(r.TWLink),
-    })).filter((r) => r.twPath);
-  };
+  const getWordLinksForPara = useCallback(
+    (chapter, paragraph) => {
+      if (!twl) return [];
+      const rows = twl[refKey(chapter, paragraph)] || [];
+      return rows
+        .map((r) => ({
+          word: r.OrigWords,
+          tag: r.Tags,
+          twPath: twLinkToPath(r.TWLink),
+        }))
+        .filter((r) => r.twPath);
+    },
+    [twl],
+  );
 
-  const fetchTwArticle = async (twPath) => {
-    if (twCache[twPath]) return twCache[twPath];
+  const fetchTwArticle = useCallback(async (twPath) => {
+    if (twCacheRef.current[twPath]) return twCacheRef.current[twPath];
     try {
       const res = await fetch(`${TW_BASE}/${twPath}.md`);
       if (!res.ok) return null;
       const text = await res.text();
-      setTwCache((prev) => ({ ...prev, [twPath]: text }));
+      twCacheRef.current[twPath] = text;
       return text;
     } catch {
       return null;
     }
-  };
+  }, []);
+
+  const fetchTwTitle = useCallback(
+    async (twPath) => {
+      if (twTitleCacheRef.current[twPath] !== undefined)
+        return twTitleCacheRef.current[twPath];
+      const article = await fetchTwArticle(twPath);
+      if (!article) {
+        twTitleCacheRef.current[twPath] = null;
+        return null;
+      }
+      const firstLine = article.split("\n")[0].replace(/^#+\s*/, "");
+      const terms = firstLine
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+      twTitleCacheRef.current[twPath] = terms;
+      return terms;
+    },
+    [fetchTwArticle],
+  );
 
   return {
     loading,
@@ -109,5 +141,6 @@ export default function useTranslationHelps() {
     getQuestionsForPara,
     getWordLinksForPara,
     fetchTwArticle,
+    fetchTwTitle,
   };
 }

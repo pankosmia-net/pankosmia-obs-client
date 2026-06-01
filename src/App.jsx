@@ -6,6 +6,7 @@ import {
   Route,
   useParams,
   useNavigate,
+  useLocation,
 } from "react-router-dom";
 import { SpaContainer } from "pankosmia-rcl";
 import { getAndSetJson, postEmptyJson } from "pithekos-lib";
@@ -22,16 +23,14 @@ import LoginIcon from "@mui/icons-material/Login";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { AuthProvider } from "./context/AuthContext";
 import AuthContext from "./context/AuthContext";
-import OBSContext from "./context/OBSContext";
 import AuthWidget from "./components/AuthWidget";
 import ProjectList, { DEMO_PROJECT } from "./components/ProjectList";
 import CreateOBS from "./components/CreateOBS";
-import OBSEditor from "./editor/OBSEditor";
-import DemoEditor from "./editor/DemoEditor";
+import StoryView from "./editor/StoryView";
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AppInner />
     </BrowserRouter>
   );
@@ -89,7 +88,6 @@ function AppInner() {
         <SpaContainer>
           <AuthProvider>
             <Routes>
-              <Route path="/:lang/OBS/:story/:section" element={<OBSApp />} />
               <Route path="/:lang/OBS/:story" element={<OBSApp />} />
               <Route path="/:lang/OBS" element={<OBSApp />} />
               <Route path="/:lang" element={<OBSApp />} />
@@ -107,13 +105,13 @@ function pad2(n) {
 }
 
 function OBSApp() {
-  const { lang, story, section } = useParams();
+  const { lang, story } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const { user, loading, isOnline, signIn } = useContext(AuthContext);
 
   const storyNum = story ? parseInt(story, 10) : 1;
-  const sectionNum = section ? parseInt(section, 10) : 0;
-  const obs = [storyNum, sectionNum];
+  const scrollToSection = location.hash ? parseInt(location.hash.slice(1), 10) : null;
 
   const [selectedProject, setSelectedProject] = useState(null);
   const [projects, setProjects] = useState([]);
@@ -125,10 +123,10 @@ function OBSApp() {
   const currentLang = lang || "en";
   const isDemo = !lang || currentLang === "en";
 
-  const setObs = useCallback(
-    ([newStory, newSection]) => {
+  const navigateToStory = useCallback(
+    (num) => {
       const l = lang || "en";
-      navigate(`/${l}/OBS/${pad2(newStory)}/${pad2(newSection)}`, { replace: true });
+      navigate(`/${l}/OBS/${pad2(num)}`);
     },
     [navigate, lang],
   );
@@ -180,7 +178,7 @@ function OBSApp() {
     if (project.isDemo) {
       navigate("/");
     } else {
-      navigate(`/${project.language_code}/OBS/${pad2(storyNum)}/${pad2(sectionNum)}`);
+      navigate(`/${project.language_code}/OBS/${pad2(storyNum)}`);
     }
   };
 
@@ -221,89 +219,74 @@ function OBSApp() {
   );
 
   return (
-    <OBSContext.Provider value={{ obs, setObs }}>
-      <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-        {!isMobile && (
-          <Box sx={{ borderRight: "1px solid", borderColor: "divider" }}>
-            {sidebarContent}
-          </Box>
-        )}
+    <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+      {!isMobile && (
+        <Box sx={{ borderRight: "1px solid", borderColor: "divider" }}>
+          {sidebarContent}
+        </Box>
+      )}
 
+      {isMobile && (
+        <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+          {sidebarContent}
+        </Drawer>
+      )}
+
+      <Box sx={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column" }}>
         {isMobile && (
-          <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-            {sidebarContent}
-          </Drawer>
-        )}
-
-        <Box sx={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column" }}>
-          {isMobile && (
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                p: 0.5,
-                borderBottom: "1px solid",
-                borderColor: "divider",
-                gap: 1,
-              }}
-            >
-              {!loading && isOnline && !user ? (
-                <IconButton onClick={signIn} color="primary" size="small">
-                  <LoginIcon />
-                </IconButton>
-              ) : user ? (
-                <IconButton onClick={() => setDrawerOpen(true)} size="small">
-                  <Avatar
-                    src={user.avatar_url}
-                    alt={user.name || user.login}
-                    sx={{ width: 28, height: 28 }}
-                  />
-                </IconButton>
-              ) : (
-                <IconButton onClick={() => setDrawerOpen(true)} size="small">
-                  <MenuIcon />
-                </IconButton>
-              )}
-              <Typography variant="body2" color="text.secondary" noWrap sx={{ flex: 1 }}>
-                {selectedProject ? selectedProject.name : "OBS Editor"}
-              </Typography>
-              {!user && isOnline && !loading && (
-                <Typography
-                  variant="caption"
-                  sx={{ color: "primary.main", cursor: "pointer", mr: 1 }}
-                  onClick={signIn}
-                >
-                  Sign in
-                </Typography>
-              )}
-            </Box>
-          )}
-
-          <Box sx={{ flex: 1, overflow: "auto" }}>
-            {selectedProject?.isDemo ? (
-              <DemoEditor />
-            ) : selectedProject ? (
-              <OBSEditor metadata={selectedProject} />
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              p: 0.5,
+              borderBottom: "1px solid",
+              borderColor: "divider",
+              gap: 1,
+            }}
+          >
+            {!loading && isOnline && !user ? (
+              <IconButton onClick={signIn} color="primary" size="small">
+                <LoginIcon />
+              </IconButton>
+            ) : user ? (
+              <IconButton onClick={() => setDrawerOpen(true)} size="small">
+                <Avatar
+                  src={user.avatar_url}
+                  alt={user.name || user.login}
+                  sx={{ width: 28, height: 28 }}
+                />
+              </IconButton>
             ) : (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: "100%",
-                  color: "text.secondary",
-                  p: 2,
-                  textAlign: "center",
-                }}
+              <IconButton onClick={() => setDrawerOpen(true)} size="small">
+                <MenuIcon />
+              </IconButton>
+            )}
+            <Typography variant="body2" color="text.secondary" noWrap sx={{ flex: 1 }}>
+              {selectedProject ? selectedProject.name : "OBS Editor"}
+            </Typography>
+            {!user && isOnline && !loading && (
+              <Typography
+                variant="caption"
+                sx={{ color: "primary.main", cursor: "pointer", mr: 1 }}
+                onClick={signIn}
               >
-                <Typography variant="h6">
-                  {isMobile
-                    ? "Tap the menu to select a project"
-                    : "Select an OBS project to begin editing"}
-                </Typography>
-              </Box>
+                Sign in
+              </Typography>
             )}
           </Box>
+        )}
+
+        <Box sx={{ flex: 1, overflow: "auto" }}>
+          {selectedProject && (
+            <StoryView
+              storyNum={storyNum}
+              scrollToSection={scrollToSection}
+              metadata={selectedProject}
+              isDemo={selectedProject.isDemo}
+              navigateToStory={navigateToStory}
+              readOnly={!user || selectedProject.isDemo}
+            />
+          )}
         </Box>
       </Box>
 
@@ -314,6 +297,6 @@ function OBSApp() {
           onCreated={handleCreated}
         />
       )}
-    </OBSContext.Provider>
+    </Box>
   );
 }

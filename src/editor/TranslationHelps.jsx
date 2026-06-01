@@ -4,24 +4,23 @@ import {
   AccordionSummary,
   AccordionDetails,
   Box,
-  Chip,
-  Popover,
+  IconButton,
+  SwipeableDrawer,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
+import CloseIcon from "@mui/icons-material/Close";
 import Markdown from "react-markdown";
 
-export default function TranslationHelps({
-  notes,
-  questions,
-  wordLinks,
-  fetchTwArticle,
-}) {
-  const [tnOpen, setTnOpen] = useState(() => sessionStorage.getItem("tn_open") === "true");
-  const [tqOpen, setTqOpen] = useState(() => sessionStorage.getItem("tq_open") === "true");
-  const [twPopover, setTwPopover] = useState(null);
-  const [twContent, setTwContent] = useState("");
-  const [twLoading, setTwLoading] = useState(false);
+function HelpsContent({ notes, questions }) {
+  const [tnOpen, setTnOpen] = useState(
+    () => sessionStorage.getItem("tn_open") === "true",
+  );
+  const [tqOpen, setTqOpen] = useState(
+    () => sessionStorage.getItem("tq_open") === "true",
+  );
 
   const toggleTn = () => {
     const next = !tnOpen;
@@ -35,66 +34,31 @@ export default function TranslationHelps({
     sessionStorage.setItem("tq_open", String(next));
   };
 
-  const handleWordClick = async (event, wordLink) => {
-    setTwPopover(event.currentTarget);
-    setTwLoading(true);
-    setTwContent("");
-    const article = await fetchTwArticle(wordLink.twPath);
-    setTwContent(article || "Article not found");
-    setTwLoading(false);
-  };
-
-  const uniqueWords = wordLinks.filter(
-    (w, i, arr) => arr.findIndex((x) => x.twPath === w.twPath) === i,
-  );
-
   const hasNotes = notes.length > 0;
   const hasQuestions = questions.length > 0;
-  const hasWords = uniqueWords.length > 0;
 
-  if (!hasNotes && !hasQuestions && !hasWords) return null;
+  if (!hasNotes && !hasQuestions) {
+    return (
+      <Typography variant="body2" color="text.secondary" sx={{ p: 2, textAlign: "center" }}>
+        No translation helps for this section
+      </Typography>
+    );
+  }
 
   return (
-    <Box sx={{ mt: 1 }}>
-      {hasWords && (
-        <Box sx={{ mb: 1, display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-          {uniqueWords.map((wl) => (
-            <Chip
-              key={wl.twPath}
-              label={wl.word}
-              size="small"
-              variant={wl.tag === "keyterm" ? "filled" : "outlined"}
-              color="primary"
-              onClick={(e) => handleWordClick(e, wl)}
-              sx={{ cursor: "pointer" }}
-            />
-          ))}
-        </Box>
-      )}
-
-      <Popover
-        open={Boolean(twPopover)}
-        anchorEl={twPopover}
-        onClose={() => setTwPopover(null)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        transformOrigin={{ vertical: "top", horizontal: "left" }}
-        slotProps={{
-          paper: {
-            sx: { maxWidth: 400, maxHeight: 350, overflow: "auto", p: 2 },
-          },
-        }}
-      >
-        {twLoading ? (
-          <Typography variant="body2" color="text.secondary">
-            Loading...
-          </Typography>
-        ) : (
-          <Markdown>{twContent}</Markdown>
-        )}
-      </Popover>
-
+    <Box>
       {hasNotes && (
-        <Accordion expanded={tnOpen} onChange={toggleTn} disableGutters elevation={0} sx={{ border: "1px solid", borderColor: "divider", "&:before": { display: "none" } }}>
+        <Accordion
+          expanded={tnOpen}
+          onChange={toggleTn}
+          disableGutters
+          elevation={0}
+          sx={{
+            border: "1px solid",
+            borderColor: "divider",
+            "&:before": { display: "none" },
+          }}
+        >
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="body2" fontWeight={600}>
               Translation Notes ({notes.length})
@@ -104,7 +68,11 @@ export default function TranslationHelps({
             {notes.map((note, i) => (
               <Box key={i} sx={{ mb: 1.5 }}>
                 {note.Quote && (
-                  <Typography variant="caption" fontWeight={600} color="primary.main">
+                  <Typography
+                    variant="caption"
+                    fontWeight={600}
+                    color="primary.main"
+                  >
                     {note.Quote}
                   </Typography>
                 )}
@@ -118,7 +86,18 @@ export default function TranslationHelps({
       )}
 
       {hasQuestions && (
-        <Accordion expanded={tqOpen} onChange={toggleTq} disableGutters elevation={0} sx={{ border: "1px solid", borderColor: "divider", mt: hasNotes ? -0.125 : 0, "&:before": { display: "none" } }}>
+        <Accordion
+          expanded={tqOpen}
+          onChange={toggleTq}
+          disableGutters
+          elevation={0}
+          sx={{
+            border: "1px solid",
+            borderColor: "divider",
+            mt: hasNotes ? -0.125 : 0,
+            "&:before": { display: "none" },
+          }}
+        >
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="body2" fontWeight={600}>
               Translation Questions ({questions.length})
@@ -131,7 +110,11 @@ export default function TranslationHelps({
                   {q.Question}
                 </Typography>
                 {q.Response && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mt: 0.5 }}
+                  >
                     {q.Response}
                   </Typography>
                 )}
@@ -142,4 +125,79 @@ export default function TranslationHelps({
       )}
     </Box>
   );
+}
+
+export default function TranslationHelps({ notes, questions }) {
+  const isMobile = useMediaQuery("(max-width:768px)");
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  const hasContent = notes.length > 0 || questions.length > 0;
+  const count = notes.length + questions.length;
+
+  if (isMobile) {
+    return (
+      <>
+        <Box
+          onClick={() => setSheetOpen(true)}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 1,
+            p: 1,
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: 1,
+            cursor: "pointer",
+            backgroundColor: "grey.50",
+            "&:hover": { backgroundColor: "grey.100" },
+          }}
+        >
+          <MenuBookIcon fontSize="small" color="action" />
+          <Typography variant="body2" color="text.secondary">
+            Translation Helps {hasContent ? `(${count})` : ""}
+          </Typography>
+        </Box>
+
+        <SwipeableDrawer
+          anchor="bottom"
+          open={sheetOpen}
+          onOpen={() => setSheetOpen(true)}
+          onClose={() => setSheetOpen(false)}
+          swipeAreaWidth={0}
+          disableSwipeToOpen
+          PaperProps={{
+            sx: {
+              maxHeight: "70vh",
+              borderTopLeftRadius: 12,
+              borderTopRightRadius: 12,
+            },
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              p: 1.5,
+              borderBottom: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <Typography variant="subtitle2" fontWeight={600}>
+              Translation Helps
+            </Typography>
+            <IconButton size="small" onClick={() => setSheetOpen(false)}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+          <Box sx={{ overflow: "auto", p: 1 }}>
+            <HelpsContent notes={notes} questions={questions} />
+          </Box>
+        </SwipeableDrawer>
+      </>
+    );
+  }
+
+  return <HelpsContent notes={notes} questions={questions} />;
 }

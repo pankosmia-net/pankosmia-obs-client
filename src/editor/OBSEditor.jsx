@@ -6,7 +6,7 @@ import AuthContext from "../context/AuthContext";
 import OBSNavigator from "./OBSNavigator";
 import SaveButton from "./SaveButton";
 import AudioRecorder from "./AudioRecorder";
-import MarkdownField from "./MarkdownField";
+import InlineEditor from "./InlineEditor";
 import { Switch, Typography } from "@mui/material";
 import ReferencePanel from "./ReferencePanel";
 import TranslationHelps from "./TranslationHelps";
@@ -222,20 +222,22 @@ export default function OBSEditor({ metadata }) {
       </Box>
       <OBSNavigator max={currentChapter.length - 1} title={chapterTitle} />
       <Stack spacing={2} sx={{ mt: 1 }}>
-        <ReferencePanel obs={obs} />
-        <MarkdownField
-          currentRow={obs[1]}
-          columnNames={currentChapter}
-          onChangeNote={readOnly ? undefined : handleChange}
+        <ReferencePanel
+          obs={obs}
+          wordLinks={helps.getWordLinksForPara(obs[0], obs[1])}
+          fetchTwTitle={helps.fetchTwTitle}
+          fetchTwArticle={helps.fetchTwArticle}
+        />
+        <InlineEditor
           value={currentChapter[obs[1]] || ""}
-          mode={readOnly ? "preview" : "write"}
+          onChange={readOnly ? undefined : handleChange}
+          readOnly={readOnly}
+          placeholder="Tap to add translation..."
         />
         {!helps.loading && (
           <TranslationHelps
             notes={helps.getNotesForPara(obs[0], obs[1])}
             questions={helps.getQuestionsForPara(obs[0], obs[1])}
-            wordLinks={helps.getWordLinksForPara(obs[0], obs[1])}
-            fetchTwArticle={helps.fetchTwArticle}
           />
         )}
         {audioEnabled && (
