@@ -1,70 +1,106 @@
-import { useState } from "react";
-import {
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Box,
-  IconButton,
-  SwipeableDrawer,
-  Typography,
-  useMediaQuery,
-} from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { useState, useRef, useEffect } from "react";
+import { Box, Chip, IconButton, Typography } from "@mui/material";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import CloseIcon from "@mui/icons-material/Close";
 import Markdown from "react-markdown";
 
-function HelpsContent({ notes, questions }) {
-  const [tnOpen, setTnOpen] = useState(
-    () => sessionStorage.getItem("tn_open") === "true",
-  );
-  const [tqOpen, setTqOpen] = useState(
-    () => sessionStorage.getItem("tq_open") === "true",
-  );
-
-  const toggleTn = () => {
-    const next = !tnOpen;
-    setTnOpen(next);
-    sessionStorage.setItem("tn_open", String(next));
-  };
-
-  const toggleTq = () => {
-    const next = !tqOpen;
-    setTqOpen(next);
-    sessionStorage.setItem("tq_open", String(next));
-  };
+export default function TranslationHelps({ notes, questions }) {
+  const [open, setOpen] = useState(false);
+  const helpsRef = useRef(null);
 
   const hasNotes = notes.length > 0;
   const hasQuestions = questions.length > 0;
+  const hasContent = hasNotes || hasQuestions;
+  const count = notes.length + questions.length;
 
-  if (!hasNotes && !hasQuestions) {
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e) => {
+      if (helpsRef.current && !helpsRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [notes, questions]);
+
+  if (!open) {
     return (
-      <Typography variant="body2" color="text.secondary" sx={{ p: 2, textAlign: "center" }}>
-        No translation helps for this section
-      </Typography>
+      <Box
+        onClick={hasContent ? () => setOpen(true) : undefined}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 1,
+          p: 1,
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: 1,
+          cursor: hasContent ? "pointer" : "default",
+          backgroundColor: "grey.50",
+          opacity: hasContent ? 1 : 0.5,
+          "&:hover": hasContent ? { backgroundColor: "grey.100" } : {},
+        }}
+      >
+        <MenuBookIcon fontSize="small" color="action" />
+        <Typography variant="body2" color="text.secondary">
+          Translation Helps {hasContent ? `(${count})` : ""}
+        </Typography>
+      </Box>
     );
   }
 
   return (
-    <Box>
-      {hasNotes && (
-        <Accordion
-          expanded={tnOpen}
-          onChange={toggleTn}
-          disableGutters
-          elevation={0}
-          sx={{
-            border: "1px solid",
-            borderColor: "divider",
-            "&:before": { display: "none" },
-          }}
-        >
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="body2" fontWeight={600}>
-              Translation Notes ({notes.length})
+    <Box ref={helpsRef}>
+      {/* Fixed close chip — always visible at top-right of viewport */}
+      <Chip
+        label="Close Helps"
+        icon={<CloseIcon sx={{ fontSize: 16 }} />}
+        size="small"
+        onClick={() => setOpen(false)}
+        sx={{
+          position: "fixed",
+          top: 8,
+          right: 8,
+          zIndex: 1200,
+          backgroundColor: "grey.800",
+          color: "white",
+          "&:hover": { backgroundColor: "grey.900" },
+          "& .MuiChip-icon": { color: "white" },
+          boxShadow: 2,
+        }}
+      />
+
+      <Box
+        sx={{
+          border: "1px solid",
+          borderColor: "primary.light",
+          borderRadius: 1,
+          backgroundColor: "grey.50",
+          p: 1.5,
+        }}
+      >
+        {/* Translation Notes */}
+        {hasNotes && (
+          <Box sx={{ mb: hasQuestions ? 2 : 0 }}>
+            <Typography
+              variant="caption"
+              fontWeight={700}
+              color="text.secondary"
+              sx={{
+                mb: 1,
+                display: "block",
+                textTransform: "uppercase",
+                letterSpacing: 0.5,
+              }}
+            >
+              Notes ({notes.length})
             </Typography>
-          </AccordionSummary>
-          <AccordionDetails sx={{ pt: 0 }}>
             {notes.map((note, i) => (
               <Box key={i} sx={{ mb: 1.5 }}>
                 {note.Quote && (
@@ -81,29 +117,25 @@ function HelpsContent({ notes, questions }) {
                 </Box>
               </Box>
             ))}
-          </AccordionDetails>
-        </Accordion>
-      )}
+          </Box>
+        )}
 
-      {hasQuestions && (
-        <Accordion
-          expanded={tqOpen}
-          onChange={toggleTq}
-          disableGutters
-          elevation={0}
-          sx={{
-            border: "1px solid",
-            borderColor: "divider",
-            mt: hasNotes ? -0.125 : 0,
-            "&:before": { display: "none" },
-          }}
-        >
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="body2" fontWeight={600}>
-              Translation Questions ({questions.length})
+        {/* Translation Questions */}
+        {hasQuestions && (
+          <Box>
+            <Typography
+              variant="caption"
+              fontWeight={700}
+              color="text.secondary"
+              sx={{
+                mb: 1,
+                display: "block",
+                textTransform: "uppercase",
+                letterSpacing: 0.5,
+              }}
+            >
+              Questions ({questions.length})
             </Typography>
-          </AccordionSummary>
-          <AccordionDetails sx={{ pt: 0 }}>
             {questions.map((q, i) => (
               <Box key={i} sx={{ mb: 1.5 }}>
                 <Typography variant="body2" fontWeight={600}>
@@ -120,84 +152,19 @@ function HelpsContent({ notes, questions }) {
                 )}
               </Box>
             ))}
-          </AccordionDetails>
-        </Accordion>
-      )}
+          </Box>
+        )}
+
+        {!hasContent && (
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ textAlign: "center", py: 1 }}
+          >
+            No translation helps for this section
+          </Typography>
+        )}
+      </Box>
     </Box>
   );
-}
-
-export default function TranslationHelps({ notes, questions }) {
-  const isMobile = useMediaQuery("(max-width:768px)");
-  const [sheetOpen, setSheetOpen] = useState(false);
-
-  const hasContent = notes.length > 0 || questions.length > 0;
-  const count = notes.length + questions.length;
-
-  if (isMobile) {
-    return (
-      <>
-        <Box
-          onClick={() => setSheetOpen(true)}
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 1,
-            p: 1,
-            border: "1px solid",
-            borderColor: "divider",
-            borderRadius: 1,
-            cursor: "pointer",
-            backgroundColor: "grey.50",
-            "&:hover": { backgroundColor: "grey.100" },
-          }}
-        >
-          <MenuBookIcon fontSize="small" color="action" />
-          <Typography variant="body2" color="text.secondary">
-            Translation Helps {hasContent ? `(${count})` : ""}
-          </Typography>
-        </Box>
-
-        <SwipeableDrawer
-          anchor="bottom"
-          open={sheetOpen}
-          onOpen={() => setSheetOpen(true)}
-          onClose={() => setSheetOpen(false)}
-          swipeAreaWidth={0}
-          disableSwipeToOpen
-          PaperProps={{
-            sx: {
-              maxHeight: "70vh",
-              borderTopLeftRadius: 12,
-              borderTopRightRadius: 12,
-            },
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              p: 1.5,
-              borderBottom: "1px solid",
-              borderColor: "divider",
-            }}
-          >
-            <Typography variant="subtitle2" fontWeight={600}>
-              Translation Helps
-            </Typography>
-            <IconButton size="small" onClick={() => setSheetOpen(false)}>
-              <CloseIcon fontSize="small" />
-            </IconButton>
-          </Box>
-          <Box sx={{ overflow: "auto", p: 1 }}>
-            <HelpsContent notes={notes} questions={questions} />
-          </Box>
-        </SwipeableDrawer>
-      </>
-    );
-  }
-
-  return <HelpsContent notes={notes} questions={questions} />;
 }
