@@ -16,79 +16,79 @@
 # Current user identity
 [[redirects]]
   from = "/me"
-  to = "https://pankosmia-web.up.railway.app/me"
+  to = "https://pankosmia.up.qombi.com/me"
   status = 200
 
 # Network enable
 [[redirects]]
   from = "/net/enable"
-  to = "https://pankosmia-web.up.railway.app/net/enable"
+  to = "https://pankosmia.up.qombi.com/net/enable"
   status = 200
 
 # Burrito endpoints (project data, ingredients)
 [[redirects]]
   from = "/burrito/*"
-  to = "https://pankosmia-web.up.railway.app/burrito/:splat"
+  to = "https://pankosmia.up.qombi.com/burrito/:splat"
   status = 200
 
 # Git operations (create OBS, list repos, clone)
 [[redirects]]
   from = "/git/*"
-  to = "https://pankosmia-web.up.railway.app/git/:splat"
+  to = "https://pankosmia.up.qombi.com/git/:splat"
   status = 200
 
 # Gitea remote repos
 [[redirects]]
   from = "/gitea/*"
-  to = "https://pankosmia-web.up.railway.app/gitea/:splat"
+  to = "https://pankosmia.up.qombi.com/gitea/:splat"
   status = 200
 
 # Navigation state
 [[redirects]]
   from = "/navigation/*"
-  to = "https://pankosmia-web.up.railway.app/navigation/:splat"
+  to = "https://pankosmia.up.qombi.com/navigation/:splat"
   status = 200
 
 # App state (current project)
 [[redirects]]
   from = "/app-state/*"
-  to = "https://pankosmia-web.up.railway.app/app-state/:splat"
+  to = "https://pankosmia.up.qombi.com/app-state/:splat"
   status = 200
 
 # i18n
 [[redirects]]
   from = "/i18n/*"
-  to = "https://pankosmia-web.up.railway.app/i18n/:splat"
+  to = "https://pankosmia.up.qombi.com/i18n/:splat"
   status = 200
 
 # Settings
 [[redirects]]
   from = "/settings/*"
-  to = "https://pankosmia-web.up.railway.app/settings/:splat"
+  to = "https://pankosmia.up.qombi.com/settings/:splat"
   status = 200
 
 # SSE notifications
 [[redirects]]
   from = "/notifications"
-  to = "https://pankosmia-web.up.railway.app/notifications"
+  to = "https://pankosmia.up.qombi.com/notifications"
   status = 200
 
 # User resources
 [[redirects]]
   from = "/user-resources/*"
-  to = "https://pankosmia-web.up.railway.app/user-resources/:splat"
+  to = "https://pankosmia.up.qombi.com/user-resources/:splat"
   status = 200
 
 # Content utils
 [[redirects]]
   from = "/content-utils/*"
-  to = "https://pankosmia-web.up.railway.app/content-utils/:splat"
+  to = "https://pankosmia.up.qombi.com/content-utils/:splat"
   status = 200
 
 # User languages
 [[redirects]]
   from = "/user-languages/*"
-  to = "https://pankosmia-web.up.railway.app/user-languages/:splat"
+  to = "https://pankosmia.up.qombi.com/user-languages/:splat"
   status = 200
 
 # --- Shared static assets from main pankosmia site ---
