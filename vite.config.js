@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-const RAILWAY = "https://pankosmia-web.up.railway.app";
+const RAILWAY = "https://pankosmia.up.qombi.com";
 const MAIN_SITE = "https://pankosmia.netlify.app";
 const LOCAL_HOST = "localhost:5179";
 

@@ -1,4 +1,4 @@
-const RAILWAY = "https://pankosmia-web.up.railway.app";
+const RAILWAY = "https://pankosmia.up.qombi.com";
 const SITE_ORIGIN = Deno.env.get("URL") || "https://obs-edit.netlify.app";
 
 export default async (request) => {
